@@ -17,7 +17,7 @@ public static class Day3
             for (var x = 0; x < lines[y].Length; x++)
             {
                 var ch = lines[y][x];
-                if(char.IsDigit(ch)||ch=='.') continue;
+                if(ch!='*') continue;
                 sum+=CheckSurrounding(x,y,lines);
             }
         }
@@ -27,7 +27,8 @@ public static class Day3
 
     private static int CheckSurrounding(int xs, int ys, string[] lines)
     {
-        var surrSum = 0;
+        var surrSum = 1;
+        var i = 0;
         for (var y = ys - 1 >= 0 ? ys -1 : 0; y <= ys+1; y++)
         {
             var isAdjacent = false;
@@ -40,12 +41,13 @@ public static class Day3
                 }
                 if (isAdjacent) continue;
                 
-                surrSum += FindNumberInString(x, y, lines);
+                surrSum *= FindNumberInString(x, y, lines);
                 isAdjacent = true;
+                i++;
             }
         }
 
-        return surrSum;
+        return i == 2 ? surrSum : 0;
     }
 
     private static int FindNumberInString(int x, int y, string[] lines)
