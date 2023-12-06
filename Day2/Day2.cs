@@ -9,45 +9,52 @@ public static class Day2
     public static void Exec()
     {
         var lines = File.ReadAllLines(@"../../../input.txt");
-        var sum = lines.Sum(IsValidGame);
+        var sum = lines.Sum(GetGamePower);
         Console.WriteLine(sum);
     }
 
-    private static int IsValidGame(string line)
+    private static int GetGamePower(string line)
     {
         var gameAndSets = line.Split(":");
-        var gameNumber = int.Parse(gameAndSets[0].Substring(5, gameAndSets[0].Length - 5));
+        var minGameColors = new MinGameColors();
 
         var sets = gameAndSets[1].Split(";");
         foreach (var set in sets)
         {
             var colors = set.Split(",");
-            if (colors.Any(IsColorOverLimit))
+            foreach (var color in colors)
             {
-                return 0;
+                CheckMinColors(color, minGameColors);
             }
         }
 
-        return gameNumber;
+        return minGameColors.Power;
     }
 
-    private static bool IsColorOverLimit(string color)
+    private static void CheckMinColors(string color, MinGameColors minGameColors)
     {
         var numberColor = color.Trim().Split(" ");
         var number = int.Parse(numberColor[0]);
         switch (numberColor[1])
         {
             case "red":
-                if (number > MaxRed) return true;
+                minGameColors.MinRed = int.Max(minGameColors.MinRed, number);
                 break;
             case "green":
-                if (number > MaxGreen) return true;
+                minGameColors.MinGreen = int.Max(minGameColors.MinGreen, number);
                 break;
             case "blue":
-                if (number > MaxBlue) return true;
+                minGameColors.MinBlue = int.Max(minGameColors.MinBlue, number);
                 break;
         }
-
-        return false;
     }
+}
+
+public class MinGameColors
+{
+    public int MinRed { get; set; } = 0;
+    public int MinGreen { get; set; } = 0;
+    public int MinBlue { get; set; } = 0;
+
+    public int Power => MinRed * MinGreen * MinBlue;
 }
