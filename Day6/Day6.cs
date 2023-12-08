@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace Day6;
 
 public static class Day6
@@ -8,41 +6,54 @@ public static class Day6
     {
         var lines = File.ReadAllLines("../../../input.txt");
 
-        var timesMatches = Regex.Matches(lines[0], @"\d+");
-        var recordsMatches = Regex.Matches(lines[1], @"\d+");
-        var times = timesMatches.Select(match => int.Parse(match.Value)).ToArray();
-        var records = recordsMatches.Select(match => int.Parse(match.Value)).ToArray();
+        var time = lines[0].Split(":")[1].Replace(" ", "");
+        var record = lines[1].Split(":")[1].Replace(" ", "");
 
-        var result = 1;
-        for (var i = 0; i < times.Length; i++) result *= GetWinningTimes(times[i], records[i]);
-
+        var result = FindBounds(long.Parse(record), long.Parse(time));
         Console.WriteLine(result);
     }
 
-    private static int GetWinningTimes(int time, int record)
+    private static long FindBounds(long record, long time)
     {
-        var holdingTimes = Enumerable.Range(1, time).ToArray();
+        long leftBound, rightBound;
+        // find left bound first
+        leftBound = FindLeftBound(1, time - 1, record, time);
+        // if left bound not found, find right bound first instead
+        if (leftBound == time - 1)
+        {
+            rightBound = FindRightBound(1, time - 1, record, time);
+            // find left bound on restricted range
+            leftBound = FindLeftBound(1, rightBound, record, time);
+        }
+        else
+        {
+            rightBound = FindRightBound(leftBound, time - 1, record, time);
+        }
 
-        var leftBound = FindLeftBound(holdingTimes, record, time);
-        var rightBound = FindRightBound(holdingTimes, record, time);
-
-        Console.WriteLine(rightBound - leftBound + 1);
-        return rightBound - leftBound + 1;
+        return rightBound - leftBound;
     }
 
-    private static int FindLeftBound(int[] array, int record, int time)
+    private static long FindLeftBound(long left, long right, long record, long time)
     {
-        for (var i = 0; i < array.Length; i++)
-            if (array[i] * (time - array[i]) > record)
-                return i;
-        return array.Length - 1;
+        long l = left, r = right;
+        while (l <= r)
+        {
+            var m = l + (r - l) / 2;
+            if (m * (time - m) < record) l = m + 1;
+            else r = m - 1;
+        }
+        return l;
     }
 
-    private static int FindRightBound(int[] array, int record, int time)
+    private static long FindRightBound(long left, long right, long record, long time)
     {
-        for (var i = array.Length - 1; i >= 0; i--)
-            if (array[i] * (time - array[i]) > record)
-                return i;
-        return 0;
+        long l = left, r = right;
+        while (l <= r)
+        {
+            var m = l + (r - l) / 2;
+            if (m * (time - m) < record) r = m - 1;
+            else l = m + 1;
+        }
+        return l;
     }
 }
