@@ -21,7 +21,6 @@ public class CardComparer : IComparer<(string, int)>
         { 'A', 14 },
         { 'K', 13 },
         { 'Q', 12 },
-        { 'J', 11 },
         { 'T', 10 },
         { '9', 9 },
         { '8', 8 },
@@ -30,7 +29,8 @@ public class CardComparer : IComparer<(string, int)>
         { '5', 5 },
         { '4', 4 },
         { '3', 3 },
-        { '2', 2 }
+        { '2', 2 },
+        { 'J', 1 } // joker now the weakest
     };
 
     public int Compare((string, int) x, (string, int) y)
@@ -50,6 +50,16 @@ public class CardComparer : IComparer<(string, int)>
     private static int GetHandType(string hand)
     {
         var handDict = hand.GroupBy(c => c).ToDictionary(g => g.Key, g => g.Count());
+        if (handDict.ContainsKey('J'))
+        {
+            var keyWithHighestValue = handDict.Aggregate((x, y) => x.Key == 'J' || (x.Value < y.Value && y.Key != 'J') ? y : x).Key;
+            if(keyWithHighestValue != 'J')
+            {
+                handDict[keyWithHighestValue] += handDict['J'];
+                handDict.Remove('J');
+            }
+        }
+
         return handDict.Count switch
         {
             1 => 6, // Five
